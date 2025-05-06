@@ -1,156 +1,173 @@
-# Data Governance Workflow
+**Data Governance Workflow**
 
-This repository contains a full end‑to‑end Data Governance project, covering data profiling, quality control, privacy/security implementation, and a bonus frequency‑analysis attack on a Caesar‑ciphered dataset.
-
----
-
-## 📂 Repository Structure
-
-```
-
-.
-├── .gitignore
-├── Data\_encryption.ipynb         # Phase 2: Encryption & Compliance transformations
-├── data\_profiling.ipynb          # Phase 0: YData Profiling notebook
-├── profilling\_code.ipynb         # Phase 0: Custom profiling notebook
-├── profilling\_code.py            # Phase 0: Profiling helper script
-├── Quality\_Control.ipynb         # Phase 1: Data cleaning & schema validation
-├── README.md                     # ← You are here
-├── requirements.txt              # Python dependencies
-│
-├── attacks
-│   └── frequency\_attack.py       # Phase 3 Bonus: Caesar cipher brute‑force attack
-│
-└── data
-├── ssh\_logs\_processed.csv    # Raw dataset (Phase 0 input)
-├── Cleaned\_csv.csv           # Phase 1 cleaned dataset
-├── encrypted\_data.csv        # Phase 2 encrypted output
-├── gdpr\_compliant.csv        # Phase 2 GDPR‑transformed data
-├── ccpa\_compliant.csv        # Phase 2 CCPA‑transformed data
-├── hipaa\_report.json         # Phase 2 HIPAA‑compliance stub report
-├── recovered\_columns.csv     # Phase 3 recovered plaintext columns
-└── .gitkeep
-
-````
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](#license)
+[![Python Version](https://img.shields.io/badge/python-3.8%2B-green.svg)](#prerequisites)
 
 ---
 
-## 🚀 Getting Started
+## 📄 Overview
 
-1. **Clone the repo**  
+This repository implements a comprehensive, end-to-end **Data Governance** framework for tabular datasets. The project is organized into four major phases:
+
+1. **Data Profiling** – Exploratory analysis and automated reporting
+2. **Quality Control** – Data cleaning, outlier removal, and schema validation
+3. **Privacy & Security** – Field-level encryption and compliance transformations (GDPR, CCPA, HIPAA)
+4. **Documentation & Discussion** – Methodology write‑up and security analysis, including an optional frequency‑analysis attack on Caesar‑ciphered data
+
+Alongside the core workflow, a bonus script demonstrates a frequency‑analysis attack to recover encrypted columns.
+
+---
+
+## 📑 Table of Contents
+
+* [Prerequisites](#prerequisites)
+* [Installation](#installation)
+* [Repository Structure](#repository-structure)
+* [Usage](#usage)
+* [Project Phases](#project-phases)
+* [Examples](#examples)
+* [Dependencies](#dependencies)
+* [Contributing](#contributing)
+* [Authors & Credits](#authors--credits)
+* [License](#license)
+
+---
+
+## 🔧 Prerequisites
+
+* **Python 3.8+**
+* [Git](https://git-scm.com/)
+* [JupyterLab](https://jupyter.org/)
+
+---
+
+## 🚀 Installation
+
+1. **Clone the repository**
+
    ```bash
-   git clone https://github.com/your‑org/data‑governance‑workflow.git
-   cd data‑governance‑workflow
-````
+   git clone https://github.com/your-org/data-governance-workflow.git
+   cd data-governance-workflow
+   ```
 
 2. **Install dependencies**
 
    ```bash
+   pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
-   *Key libraries include:*
-
-   * `pandas`, `numpy`
-   * `ydata-profiling` (for automated profiling)
-   * `pandera` (for schema validation)
-   * `cryptography` (for Fernet encryption)
-   * `python-gdpr-utils`, `ccpa`, `Hippo`, `pyTenable`, `SecurityMonkey` (stubs/real for compliance)
-
-3. **Launch Jupyter notebooks**
+3. **Launch JupyterLab**
 
    ```bash
    jupyter lab
    ```
 
-   Then open and run each notebook in sequence (see Phases below).
+---
+
+## 📂 Repository Structure
+
+```text
+├── .gitignore
+├── data_profiling.ipynb        # Phase 0: Automated profiling with YData
+├── profiling_helpers.py        # Phase 0: Custom profiling functions
+├── quality_control.ipynb       # Phase 1: Cleaning & schema validation
+├── data_encryption.ipynb       # Phase 2: Encryption & compliance transforms
+├── attacks/
+│   └── frequency_attack.py     # Bonus: Frequency‑analysis on Caesar cipher
+├── data/
+│   ├── ssh_logs_processed.csv  # Raw input dataset
+│   ├── Cleaned_csv.csv         # Phase 1 output
+│   ├── encrypted_data.csv      # Phase 2 encrypted output
+│   ├── gdpr_compliant.csv      # Phase 2 GDPR transform
+│   ├── ccpa_compliant.csv      # Phase 2 CCPA transform
+│   ├── hipaa_report.json       # Phase 2 HIPAA audit stub
+│   └── recovered_columns.csv   # Phase 3 recovered data
+├── requirements.txt            # Python dependencies
+└── README.md                   # Project documentation (this file)
+```
 
 ---
 
-## 🗓️ Project Phases
+## ⚙️ Usage
 
-### Phase 0 – Data Profiling (3 pts)
+### 1. Execute Notebooks in Sequence
 
-* **Goal:** Select a dataset (≥10 000 records, contains textual, numeric, and password fields) and profile it.
-* **Notebook(s):**
+Open each notebook in JupyterLab and follow the phase-specific instructions:
 
-  * `data_profiling.ipynb` – Automated profiling with YData ProfileReport
-  * `profilling_code.ipynb` & `profilling_code.py` – Custom column‑wise statistics and notes
-* **Deliverables:**
+* **Phase 0**: `data_profiling.ipynb`
+* **Phase 1**: `quality_control.ipynb`
+* **Phase 2**: `data_encryption.ipynb`
+* **Phase 3**: Document your findings and run the bonus attack
 
-  * Profiling report (HTML/PDF)
-  * Code and issue identification
-
-### Phase 1 – Quality Control (3 pts)
-
-* **Goal:** Clean data, drop duplicates, impute missing values, remove outliers, and validate schema.
-* **Notebook:** `Quality_Control.ipynb`
-* **Key steps:**
-
-  * Deduplication & null‑imputation (median/mode)
-  * IQR‑based outlier removal
-  * Schema validation using `pandera`
-* **Deliverables:** Cleaned CSV (`data/Cleaned_csv.csv`), code, and documentation.
-
-### Phase 2 – Privacy & Security (5 pts)
-
-* **Goal:** Encrypt sensitive fields, implement GDPR/CCPA/HIPAA procedures.
-* **Notebook:** `Data_encryption.ipynb`
-* **Encryption:**
-
-  * **Fernet** for `Password`
-  * **Caesar cipher** for `Username`
-  * **Playfair** (or Caesar) for `City` & `Country`
-* **Compliance transformations:**
-
-  * **GDPR** (IP anonymization + pseudonymization stub)
-  * **CCPA** (`DoNotSell` flag + `can_sell_data` column)
-  * **HIPAA** stub audit (`hipaa_report.json`)
-* **Outputs:**
-
-  * `data/encrypted_data.csv`
-  * `data/gdpr_compliant.csv`
-  * `data/ccpa_compliant.csv`
-  * `data/hipaa_report.json`
-
-### Phase 3 – Documentation & Discussion (10 pts)
-
-* **Goal:** Document methodology, present findings, and discuss code.
-* **Bonus (3 pts):**
-
-  * **Frequency‑analysis attack** on Caesar‑encrypted columns.
-  * **Script:** `attacks/frequency_attack.py`
-  * **Outputs:**
-
-    * Recovered columns saved to `data/recovered_columns.csv`
-    * Console summary of best shifts, match rates, and sample mismatches.
-
----
-
-## ▶️ Usage Examples
-
-### Run the Caesar‑attack script
+### 2. Run the Frequency‑Analysis Attack (Bonus)
 
 ```bash
 cd attacks
 python frequency_attack.py
 ```
 
-Results will be written to `../data/recovered_columns.csv` and printed on-screen.
+Output is saved to `../data/recovered_columns.csv` and summarized in the console.
 
-### Open a notebook
+---
 
-From the repo root:
+## 🗂 Project Phases
 
-```bash
-jupyter lab Data_encryption.ipynb
-```
+### Phase 0 – Data Profiling
+
+**Objective**: Generate summary statistics, detect anomalies, and produce a profiling report.
+
+* **Automated**: `data_profiling.ipynb` uses **YData Profiling**
+* **Custom**: `profiling_helpers.py` computes bespoke metrics
+* **Deliverables**: Interactive HTML/PDF report, code notebooks
+
+### Phase 1 – Quality Control
+
+**Objective**: Clean dataset by handling duplicates, imputing missing values, removing outliers, and enforcing schema.
+
+* **Notebook**: `quality_control.ipynb`
+* **Key Steps**:
+
+  * Deduplication & Null‑value imputation (median/mode)
+  * IQR‑based outlier detection and removal
+  * Schema enforcement via **Pandera**
+* **Output**: `data/Cleaned_csv.csv`
+
+### Phase 2 – Privacy & Security
+
+**Objective**: Encrypt sensitive fields and apply compliance rules (GDPR, CCPA, HIPAA).
+
+* **Notebook**: `data_encryption.ipynb`
+* **Encryption Methods**:
+
+  * **Fernet** for passwords
+  * **Caesar cipher** for usernames
+  * **Playfair (or Caesar)** for location data
+* **Compliance**:
+
+  * **GDPR**: IP anonymization + pseudonymization stub
+  * **CCPA**: Do‑Not‑Sell flag + `can_sell_data` column
+  * **HIPAA**: Stub audit report (`hipaa_report.json`)
+* **Outputs**:
+
+  * `data/encrypted_data.csv`
+  * `data/gdpr_compliant.csv`
+  * `data/ccpa_compliant.csv`
+  * `data/hipaa_report.json`
+
+### Phase 3 – Documentation & Discussion
+
+**Objective**: Present methodologies, discuss results, and optionally demonstrate a security attack.
+
+* Write a comprehensive project report
+* Include visualizations and code snippets
+* **Bonus**: Frequency‑analysis attack script (`attacks/frequency_attack.py`)
 
 ---
 
 ## 🛠 Dependencies
 
-Dependencies are recorded in `requirements.txt`. To update:
+All required packages are listed in `requirements.txt`. To update dependencies:
 
 ```bash
 pip freeze > requirements.txt
@@ -158,17 +175,22 @@ pip freeze > requirements.txt
 
 ---
 
-## 👩‍💻 Team & Credits
+## 🤝 Contributing
 
-* **Your Name**, **Student A**, **Student B**
-* Instructor & TA: Dr. XYZ
-* Dataset selected: SSH login logs from \[source/link].
+Contributions are welcome! Please fork the repository and submit a pull request. For major changes, open an issue first to discuss your ideas.
 
 ---
 
-## 📜 License & Policies
+## 👥 Authors & Credits
 
-* All code and write‑ups are original and comply with academic honesty policies.
-* **AI usage:** No unauthorized AI‑generated content was used.
+* **Project Team**: Your Name, Student A, Student B
+* **Instructor & TA**: Dr. XYZ
+* **Data Source**: SSH login logs from \[Original Source Link]
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License**. See [LICENSE](./LICENSE) for details.
 
 ---
