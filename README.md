@@ -1,196 +1,118 @@
-**Data Governance Workflow**
+# DataGovernanceWorkflow
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](#license)
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-green.svg)](#prerequisites)
+## Project Overview
 
----
+The DataGovernanceWorkflow repository provides a comprehensive pipeline for managing, profiling, encrypting, and auditing sensitive data. It includes encryption routines, data profiling and quality control notebooks, compliance report generation (GDPR, CCPA, HIPAA), and attack simulation scripts. The workflow is organized to separate raw data, analysis notebooks, scripts, and generated reports for clarity and reproducibility.
 
-## 📄 Overview
+## Repository Structure
 
-This repository implements a comprehensive, end-to-end **Data Governance** framework for tabular datasets. The project is organized into four major phases:
+```
+DataGovernanceWorkflow/
+├── data/              # Raw and processed datasets (CSV, JSON)
+├── scripts/           # Standalone Python scripts for encryption, decryption, and attack simulations
+├── notebooks/         # Jupyter notebooks for interactive exploration and profiling
+├── reports/           # Generated HTML and PDF reports (profiling, compliance, quality control)
+├── requirements.txt   # Python package dependencies
+├── LICENSE            # Project license
+└── README.md          # Project overview and instructions
+```
 
-1. **Data Profiling** – Exploratory analysis and automated reporting
-2. **Quality Control** – Data cleaning, outlier removal, and schema validation
-3. **Privacy & Security** – Field-level encryption and compliance transformations (GDPR, CCPA, HIPAA)
-4. **Documentation & Discussion** – Methodology write‑up and security analysis, including an optional frequency‑analysis attack on Caesar‑ciphered data
+## Data Directory (`data/`)
 
-Alongside the core workflow, a bonus script demonstrates a frequency‑analysis attack to recover encrypted columns.
+Contains raw input files and outputs from processing steps:
 
----
+* `ccpa_compliant.csv`: Data annotated for CCPA compliance (DoNotSell flag and can\_sell\_data column).
+* `Cleaned_csv.csv`: Preprocessed dataset used for encryption and profiling.
+* `encrypted_data.csv`: Sensitive columns encrypted using Fernet, Caesar, and Playfair ciphers.
+* `gdpr_compliant.csv`: Data anonymized for GDPR fields (IP, Username, Password, City, Country).
+* `hipaa_report.json`: HIPAA compliance findings in JSON format.
+* `recovered_columns.csv`: Columns recovered after brute-force decryption of Caesar-encrypted fields.
+* `ssh_logs_processed.csv`: SSH log dataset cleaned and formatted for profiling and validation.
 
-## 📑 Table of Contents
+## Scripts Directory (`scripts/`)
 
-* [Prerequisites](#prerequisites)
-* [Installation](#installation)
-* [Repository Structure](#repository-structure)
-* [Usage](#usage)
-* [Project Phases](#project-phases)
-* [Examples](#examples)
-* [Dependencies](#dependencies)
-* [Contributing](#contributing)
-* [Authors & Credits](#authors--credits)
-* [License](#license)
+* `frequency_attack.py`: Implements an improved brute-force attack on Caesar-ciphered columns, diagnoses mismatches, and applies custom fixes to maximize recovery accuracy.
+* `profilling_code.py`: Generates programmatic, text-based profiling of numeric, datetime, and categorical columns, and visualizes login attempt patterns by hour, country, and city.
 
----
+## Notebooks Directory (`notebooks/`)
 
-## 🔧 Prerequisites
+1. **Data\_encryption.ipynb**
 
-* **Python 3.8+**
-* [Git](https://git-scm.com/)
-* [JupyterLab](https://jupyter.org/)
+   * Reads the cleaned CSV and drops index columns.
+   * Encrypts `Password` with Fernet.
+   * Applies Ceasar cipher (shift=3) to `Username`, `City`, and `Country`.
+   * Assigns usernames to random categories for role-permissions testing.
+   * Integrates GDPR, CCPA, and HIPAA pseudonymization or stub routines, exporting compliance artifacts.
 
----
+2. **data\_profiling.ipynb**
 
-## 🚀 Installation
+   * Uses `ydata_profiling` to generate an HTML profiling report of the SSH log dataset.
 
-1. **Clone the repository**
+3. **profilling\_code.ipynb**
+
+   * Programmatic profiling: computes summary statistics for each column (numeric, datetime, categorical).
+   * Builds a pandas DataFrame of profiling information and displays it.
+   * Converts and analyzes combined datetime fields and plots login attempts by hour, country, and city.
+
+4. **Quality\_Control.ipynb**
+
+   * Loads the SSH log data and inspects schema.
+   * Cleans duplicates and missing values (median for numeric, mode for categorical).
+   * Removes outliers based on 1.5 × IQR rule.
+   * Validates the cleaned dataset against a Pandera schema, reporting any failures.
+
+## Reports Directory (`reports/`)
+
+* `profiling_report.html`
+  Interactive HTML summary of data profiling.
+* `profiling_report.pdf`
+  PDF export of the profiling report.
+* `profiling_data_ssh_logs_process.html`
+  HTML rendering of the profiling steps for SSH logs.
+* `Phase 1.pdf`
+  Quality Control notebook report summarizing cleaning, outlier handling, and schema validation.
+
+## Compliance Workflows
+
+1. **GDPR Compliance**
+
+   * Anonymizes IP addresses and pseudonymizes other sensitive fields using `python_gdpr_utils` if available, else a stub based on MD5 hashing.
+   * Outputs `gdpr_compliant.csv`.
+
+2. **CCPA Compliance**
+
+   * Adds `DoNotSell` flag per user with consistent random assignment.
+   * Derives `can_sell_data` column.
+   * Outputs `ccpa_compliant.csv`.
+
+3. **HIPAA Compliance**
+
+   * Runs HIPAA scanners (`HippoScanner`, `TenableIO`, `SecurityMonkey`) if installed, else returns an empty stub.
+   * Outputs `hipaa_report.json`.
+
+## Setup and Usage
+
+1. **Environment Setup**
 
    ```bash
-   git clone https://github.com/your-org/data-governance-workflow.git
-   cd data-governance-workflow
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   pip install --upgrade pip
+   python3 -m venv .venv
+   source .venv/bin/activate
    pip install -r requirements.txt
    ```
 
-3. **Launch JupyterLab**
+2. **Run Encryption and Compliance Pipeline**
 
    ```bash
-   jupyter lab
+   python scripts/frequency_attack.py       # Attacks and recovers encrypted fields
+   # For notebooks, launch Jupyter Lab:
+   jupyter lab notebooks
    ```
 
----
+3. **Generate Reports**
 
-## 📂 Repository Structure
+   * Open `notebooks/data_profiling.ipynb` to regenerate profiling HTML.
+   * Run `Quality_Control.ipynb` to validate data schema and update the Phase 1 report.
 
-```text
-├── .gitignore
-├── data_profiling.ipynb        # Phase 0: Automated profiling with YData
-├── profiling_helpers.py        # Phase 0: Custom profiling functions
-├── quality_control.ipynb       # Phase 1: Cleaning & schema validation
-├── data_encryption.ipynb       # Phase 2: Encryption & compliance transforms
-├── attacks/
-│   └── frequency_attack.py     # Bonus: Frequency‑analysis on Caesar cipher
-├── data/
-│   ├── ssh_logs_processed.csv  # Raw input dataset
-│   ├── Cleaned_csv.csv         # Phase 1 output
-│   ├── encrypted_data.csv      # Phase 2 encrypted output
-│   ├── gdpr_compliant.csv      # Phase 2 GDPR transform
-│   ├── ccpa_compliant.csv      # Phase 2 CCPA transform
-│   ├── hipaa_report.json       # Phase 2 HIPAA audit stub
-│   └── recovered_columns.csv   # Phase 3 recovered data
-├── requirements.txt            # Python dependencies
-└── README.md                   # Project documentation (this file)
-```
+## License
 
----
-
-## ⚙️ Usage
-
-### 1. Execute Notebooks in Sequence
-
-Open each notebook in JupyterLab and follow the phase-specific instructions:
-
-* **Phase 0**: `data_profiling.ipynb`
-* **Phase 1**: `quality_control.ipynb`
-* **Phase 2**: `data_encryption.ipynb`
-* **Phase 3**: Document your findings and run the bonus attack
-
-### 2. Run the Frequency‑Analysis Attack (Bonus)
-
-```bash
-cd attacks
-python frequency_attack.py
-```
-
-Output is saved to `../data/recovered_columns.csv` and summarized in the console.
-
----
-
-## 🗂 Project Phases
-
-### Phase 0 – Data Profiling
-
-**Objective**: Generate summary statistics, detect anomalies, and produce a profiling report.
-
-* **Automated**: `data_profiling.ipynb` uses **YData Profiling**
-* **Custom**: `profiling_helpers.py` computes bespoke metrics
-* **Deliverables**: Interactive HTML/PDF report, code notebooks
-
-### Phase 1 – Quality Control
-
-**Objective**: Clean dataset by handling duplicates, imputing missing values, removing outliers, and enforcing schema.
-
-* **Notebook**: `quality_control.ipynb`
-* **Key Steps**:
-
-  * Deduplication & Null‑value imputation (median/mode)
-  * IQR‑based outlier detection and removal
-  * Schema enforcement via **Pandera**
-* **Output**: `data/Cleaned_csv.csv`
-
-### Phase 2 – Privacy & Security
-
-**Objective**: Encrypt sensitive fields and apply compliance rules (GDPR, CCPA, HIPAA).
-
-* **Notebook**: `data_encryption.ipynb`
-* **Encryption Methods**:
-
-  * **Fernet** for passwords
-  * **Caesar cipher** for usernames
-  * **Playfair (or Caesar)** for location data
-* **Compliance**:
-
-  * **GDPR**: IP anonymization + pseudonymization stub
-  * **CCPA**: Do‑Not‑Sell flag + `can_sell_data` column
-  * **HIPAA**: Stub audit report (`hipaa_report.json`)
-* **Outputs**:
-
-  * `data/encrypted_data.csv`
-  * `data/gdpr_compliant.csv`
-  * `data/ccpa_compliant.csv`
-  * `data/hipaa_report.json`
-
-### Phase 3 – Documentation & Discussion
-
-**Objective**: Present methodologies, discuss results, and optionally demonstrate a security attack.
-
-* Write a comprehensive project report
-* Include visualizations and code snippets
-* **Bonus**: Frequency‑analysis attack script (`attacks/frequency_attack.py`)
-
----
-
-## 🛠 Dependencies
-
-All required packages are listed in `requirements.txt`. To update dependencies:
-
-```bash
-pip freeze > requirements.txt
-```
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please fork the repository and submit a pull request. For major changes, open an issue first to discuss your ideas.
-
----
-
-## 👥 Authors & Credits
-
-* **Project Team**: Your Name, Student A, Student B
-* **Instructor & TA**: Dr. XYZ
-* **Data Source**: SSH login logs from \[Original Source Link]
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License**. See [LICENSE](./LICENSE) for details.
-
----
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
